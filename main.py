@@ -3,7 +3,8 @@
 BUILD_VERSION = 1
 ##############################################
 import os
-os.system("pip install -r requirements.txt")
+try: os.system("pip install -r requirements.txt")
+except: pass
 import sys
 import json
 
@@ -14,7 +15,7 @@ import pygame
 import pymunk
 
 from pathlib import Path
-MAIN_DIRECTORY_PATH = f"C:\\Users\\{os.getenv('username')}\\Documents\\GRAVITY\\"
+MAIN_DIRECTORY_PATH = str(Path(__file__).parent.absolute()) + "\\assets\\"
 
 # rendering constants
 SCREEN_SIZE = (500,500)
@@ -38,6 +39,7 @@ game_console = messaging.channel()
 OFFICIAL_LEVELS = os.listdir(MAIN_DIRECTORY_PATH + "levels")
 OFFICIAL_LEVELS.remove("title.json")
 attempt_number = 0
+level_id = 1
 camera_movement = True
 
 title_screen = True
@@ -47,7 +49,7 @@ game_won = False
 display_console = False
 display_hud = False
 
-DEFAULT_FONT = "textures/pixel.ttf"
+DEFAULT_FONT = MAIN_DIRECTORY_PATH + "textures/pixel.ttf"
 
 # pygame setup
 pygame.init()
@@ -211,7 +213,7 @@ def camera_focus_on_goal(layer: int):
                 camera_pos = [t_width*column*RENDER_SIZE+(t_width*RENDER_SIZE)/2, t_height*row*RENDER_SIZE+(t_height*RENDER_SIZE)/2]
 
 # main game
-load_tilemap(default_tileset, "levels/title.json")
+load_tilemap(default_tileset, MAIN_DIRECTORY_PATH + "levels/title.json")
 load_tilemap_collisions()
 logo_resized = pygame.transform.scale(LOGO_IMAGE, (int(LOGO_IMAGE.get_rect().width*RENDER_SIZE*1/25), int(LOGO_IMAGE.get_rect().height*RENDER_SIZE*1/25)))
 while(True):
@@ -287,7 +289,7 @@ while(True):
             title_screen = False
             unload_tilemap_collisions()
             load_player_entity()
-            load_tilemap(default_tileset, f"levels/1.json")
+            load_tilemap(default_tileset, MAIN_DIRECTORY_PATH + "levels/1.json")
             load_tilemap_collisions()
             camera_focus_on_goal(1)
             level_selector = False
@@ -350,12 +352,13 @@ while(True):
         button_rect = pygame.Rect(button_pos[0], button_pos[1], text.get_rect().width, text.get_rect().height)
         button = gamedenRE.button(button_rect)
         if left_mouse_click_up and button.is_hovering(mouse_pos):
-            load_tilemap(default_tileset, f"levels/{int(loaded_tilemap_file_name)+1}.json")
+            load_tilemap(default_tileset, MAIN_DIRECTORY_PATH + f"levels/{level_id+1}.json")
             unload_tilemap_collisions()
             load_player_entity()
             load_tilemap_collisions()
             game_reset()
             attempt_number = 0
+            level_id += 1
             camera_focus_on_goal(1)
             game_won = False
         
@@ -374,7 +377,7 @@ while(True):
         screen.blit(attempt_text, (int(w_width - w_width/75 - attempt_text.get_rect().width),fps_text.get_rect().height+int(w_height/75)))
 
         # level
-        level_text = gamedenRE.text2(f"level #{loaded_tilemap_file_name}", 1.5*RENDER_SIZE, DEFAULT_FONT, (0,0,0))
+        level_text = gamedenRE.text2(f"level #{level_id}", 1.5*RENDER_SIZE, DEFAULT_FONT, (0,0,0))
         screen.blit(level_text, (int(w_width - w_width/75 - level_text.get_rect().width),fps_text.get_rect().height+attempt_text.get_rect().height+int(w_height/75)))
 
     pygame.display.flip()
